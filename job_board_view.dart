@@ -1,3 +1,4 @@
+// Use Riverpod
 class JobBoardView extends ConsumerStatefulWidget {
   const JobBoardView({super.key});
 
@@ -32,9 +33,11 @@ class _JobBoardViewState extends ConsumerState<JobBoardView> {
   }
 
   Future<void> _loadMoreJobs() async {
+    // Manage loader
     if (ref.read(loadingNotifierProvider) || !_hasMoreData) return;
     ref.read(loadingNotifierProvider.notifier).setLoading(true);
-
+    
+    // Call repository to get more results
     final paginatedJobs =
         await ref.read(getJobsAvailableProvider(_lastDocument).future);
 
@@ -44,7 +47,8 @@ class _JobBoardViewState extends ConsumerState<JobBoardView> {
       _allJobs.addAll(paginatedJobs.jobs);
       _lastDocument = paginatedJobs.lastDocument;
     }
-
+    
+    // Manage loader
     ref.read(loadingNotifierProvider.notifier).setLoading(false);
   }
 
@@ -64,8 +68,10 @@ class _JobBoardViewState extends ConsumerState<JobBoardView> {
               return Center(
                   child: ErrorMessageWidget(snapshot.error.toString()));
             } else {
+              // NotificationListener to handle scroll down event
               return NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
+                  // Check if it is the bottom of the list
                   if (scrollInfo.metrics.pixels ==
                           scrollInfo.metrics.maxScrollExtent &&
                       !isLoadingMore) {
@@ -73,6 +79,7 @@ class _JobBoardViewState extends ConsumerState<JobBoardView> {
                   }
                   return false;
                 },
+                // Load the list view
                 child: ListView.builder(
                   itemCount: _allJobs.length + (_hasMoreData ? 1 : 0),
                   itemBuilder: (context, index) {
